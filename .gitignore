@@ -34,3 +34,7 @@ dist/*
 .vscode/
 .DS_Store
 Thumbs.db
+
+# Task documentation
+docs/tasks/
+docs/phases

@@ -37,6 +37,17 @@ class TraceWriter:
             "occurred_at": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
             "actor": actor,
         }
+        if event_type in ("case_received", "case_finalized") and self.path.exists():
+            try:
+                for line in self.path.read_text(encoding="utf-8").splitlines():
+                    if not line.strip():
+                        continue
+                    existing = json.loads(line)
+                    if existing.get("case_id") == case_id and existing.get("event_type") == event_type:
+                        return existing
+            except Exception:
+                pass
+
         optional = {
             "target": target,
             "decision_code": decision_code,

@@ -1,7 +1,10 @@
 from __future__ import annotations
 
+from pathlib import Path
 from typing import Any
 
+from .agents import CoordinatorAgent
+from .contracts import Contracts
 from .mcp_gateway import EvidenceGateway
 from .trace import TraceWriter
 
@@ -9,10 +12,14 @@ from .trace import TraceWriter
 async def solve_case(
     case: dict[str, Any], gateway: EvidenceGateway, trace: TraceWriter
 ) -> dict[str, Any]:
-    """Implement the L3A coordinator and specialist-agent workflow here.
+    """Execute the L3A coordinator and specialist-agent multi-agent workflow.
 
-    The starter kit intentionally does not generate a fallback answer: submitting an
-    invented answer or evidence reference would violate the competition contract.
+    Coordinates the sequential DAG pipeline:
+    Coordinator -> OrderSpecialist -> PaymentSpecialist
+    -> ShipmentSpecialist -> PolicySpecialist -> VerifierAgent -> CoordinatorFinalize
     """
-    del case, gateway, trace
-    raise NotImplementedError("Implement the L3A multi-agent workflow in solve_case()")
+    contracts = getattr(trace, "contracts", None)
+    if contracts is None:
+        contracts = Contracts(Path("contracts/schemas"))
+    coordinator = CoordinatorAgent()
+    return await coordinator.coordinate(case, gateway, trace, contracts)
